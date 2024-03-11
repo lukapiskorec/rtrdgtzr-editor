@@ -1,0 +1,58 @@
+* {
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	font-family: monospace;
+	background-color: rgb(50, 50, 50); /* rgb(0, 0, 0) */
+	overflow: hidden; /* hide scrollbars */
+}
+
+/* styling of the p5 loading menu - text and background */
+#p5_loading {
+	background-color: blue;
+	color: white;
+	font-family: monospace;
+	font-size: 1.5vmin;
+	text-align: center;
+	box-sizing: border-box;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	position: fixed;
+	width: 100%;
+	height: 100%;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+
+/* separately stying this part of the text so we can animate it */
+#booting_text {
+	color: white;
+	font-family: monospace;
+	font-size: 1.5vmin;
+	text-align: center;
+	box-sizing: border-box;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	position: fixed;
+	width: 100%;
+	height: 100%;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -25%);
+}
+
+/* defining animation parameters for the "booting" text */
+.bootingclass {
+	animation: blinker 1.5s steps(1,end) infinite;
+  }
+  
+  @keyframes blinker {
+	50% {
+	  opacity: 0;
+	}
+  }
