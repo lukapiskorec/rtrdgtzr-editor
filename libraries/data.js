@@ -33,8 +33,12 @@ banner_txt += "\n     r t r d g t z r - e d i t o r |  { p r o t o c e l l : l a
 //let stack_data_main, stack_data_background;
 //let compressed_signal_size, image_compression_ratio;
 
+let input_img, gif;
+let thumbnail_scale, dropped_image, dropped_file, monomek;
+let stack_data_main, stack_data_background;
+let compressed_signal_size, image_compression_ratio;
 
-let thumbnail;
+let thumbnail, frame_to_draw, buffer_frames, canvas, output_scale;
 
 
 let frame_duration = 100; // in mms
@@ -42,8 +46,7 @@ let frame_rate = 1000 / frame_duration; // animation frame rate
 
 let frame_counter = 0; // this will increment inside draw()
 let frame_counter_after_drop = 0; // this will increment inside draw()
-
-//let nr_of_frames = 5; // number of frames in a gif animation
+let nr_of_frames = 5; // number of frames in a gif animation
 
 let drop_zone = 0; // 0 - outside canvas,  1 - inside canvas
 
@@ -51,7 +54,7 @@ let drop_zone = 0; // 0 - outside canvas,  1 - inside canvas
 let offset_rgb = [-25, -25, 25]; // rgb offset applied to the droped image - just for preview purposes during editing, the actual pixel values are not changed
 //let background_toggle = false; // will be used to toggle the color of the html body background
 let signal = ""; // initialize the signal, this is where the image data will be stored
-let max_chars = 2000; // maximum number of characters in the compressed signal - this is separately set inside fx_params.js for the signal param
+//let max_chars = 2000; // maximum number of characters in the compressed signal - this is separately set inside fx_params.js for the signal param
 
 let format = "square"; // get format string from params
 let border_type = "thick"; // type of border - "none", "thin", "thick"
@@ -95,15 +98,16 @@ if (window.innerWidth / window.innerHeight < w_h_ratio) {
 let canvas_dim = [target_dim[0] * thumbnail_scale, target_dim[1] * thumbnail_scale]; // canvas dimensions are enlarged to show the input image scaled up
 //let decompressed_signal_size = squares_nr[0] * squares_nr[1] * quality;
 
-/*
+
 if (window.innerWidth / window.innerHeight < w_h_ratio) {
   output_scale = Math.floor(window.innerWidth / target_dim[0]); // scaling factor for the output image
 } else {
   output_scale = Math.floor(window.innerHeight / target_dim[1]); // scaling factor for the output image
 }
-*/
 
-//let output_dim = [target_dim[0] * output_scale, target_dim[1] * output_scale];
+
+let output_dim = [target_dim[0] * output_scale, target_dim[1] * output_scale];
+let output_border = [20 * output_scale, 20 * output_scale]; // thick border
 
 /*
 if (border_type == "none") { output_border = [0, 0]; }  // no border
@@ -136,9 +140,9 @@ const allel_effect_stacks_background = [
 // used only with broken tokens (when the signal is undefined) - [value, probability]
 //const allel_random_alpha_prob = [[0.0, 1], [0.01, 1], [0.1, 1], [0.25, 1]];
 
-//let effects_main_name = gene_weighted_choice(allel_effect_stacks_main); // type of effects workflow to be used on the main image
-//let effects_background_name = gene_weighted_choice(allel_effect_stacks_background); // type of effects workflow to be used on the background
-//let invert_input = gene() < 0.25 ? true : false; // inverts both the input image and the effects applied to it after
+let effects_main_name = gene_weighted_choice(allel_effect_stacks_main); // type of effects workflow to be used on the main image
+let effects_background_name = gene_weighted_choice(allel_effect_stacks_background); // type of effects workflow to be used on the background
+let invert_input = false; // inverts both the input image and the effects applied to it after
 //let random_alpha_prob = gene_weighted_choice(allel_random_alpha_prob); // approx. chance that the square of pixels will be transparent (used only with broken tokens)
 
 //let start_screen = true; // this will show the start screen at the beginning and be switched off after any key is pressed
@@ -146,11 +150,17 @@ const allel_effect_stacks_background = [
 
 let drop_screen = true; // drop screen will be switched off after the image is dropped
 let thumbnail_ready = false; // additional flag for when thumbnail is ready for use
+let apply_effects = false; // flag to know when the effects should be applied to the input image
+let effects_applied = false; // flag to know when the effects have been applied
 
 //let display_signal = false; // display signal characters at key press
-//let hide_info = false; // hide info text during image editing at key press
+
+let hide_info = false; // hide info text during image editing at key press
+
 //let trigger_preview = true; // this will trigger fxpreview() once and then set itself to false
-//let animation_paused = false; // trigger animation pause
+
+let animation_paused = false; // trigger animation pause
+
 //let random_frame_nr = 0; // fixed random frame to display during animation pause
 
 // 8x8 luminance quantization table provided by the JPEG standard

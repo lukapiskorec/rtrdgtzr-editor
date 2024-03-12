@@ -54,12 +54,12 @@ function setEffectData(effects_stack_name) {
   let data = {};
 
   // settings taken from params are defined here
-  data["effect_era"] = $fx.getParam("effect_era");
-  data["new_brightness"] = $fx.getParam("brightness");
-  data["contrast"] = $fx.getParam("contrast");
+  data["effect_era"] = "'80s";
+  data["new_brightness"] = 1.0;
+  data["contrast"] = 0.50;
   data["mask_contrast"] = clamp(data["contrast"] * 1.2, 0, 1); // 20% larger than contrast, clamped between 0 and 1
-  data["light_threshold"] = $fx.getParam("light_threshold");
-  data["dark_threshold"] = $fx.getParam("dark_threshold");
+  data["light_threshold"] = 45;
+  data["dark_threshold"] = 30;
 
   let non_mid_gray = gene() < 0.50 ? 40 : 60; // gray value that is either 40 or 60
   data["alpha_brightness"] = gene() < 0.50 ? 50 : non_mid_gray; // can be 40, 50 or 60
@@ -1651,11 +1651,11 @@ function showDropScreen() {
   noStroke();
 }
 
-/*
+
 // shows signal info as text on the canvas
 function showSignalInfo() {
   let txt_shift, txt_size, signal_info_txt;
-  let signal_info_txt_1, signal_info_txt_2, signal_info_txt_3, signal_info_txt_4, signal_info_txt_5, signal_info_txt_6;
+  let signal_info_txt_1, signal_info_txt_2, signal_info_txt_4, signal_info_txt_5, signal_info_txt_6;
   let color_a, color_b, color_c;
 
   let animation_state = frame_counter % 10 < 6;
@@ -1672,10 +1672,6 @@ function showSignalInfo() {
   image_compression_ratio = compressed_signal_size / target_pixel_nr;
   signal_info_txt_2 = "compressed chars > " + compressed_signal_size + "\n";
 
-  signal_info_txt_3 = "";
-  if (compressed_signal_size > max_chars) { signal_info_txt_3 = "chars over limit > " + (compressed_signal_size - max_chars).toString() + "\n"; }
-  else { signal_info_txt_3 = "chars fit into params\n"; }
-
   signal_info_txt_4 = "image compression > " + Math.round(image_compression_ratio * 100).toString() + "%\n";
 
   signal_info_txt_5 = "quality > " + quality.toString() + "\n";
@@ -1685,9 +1681,9 @@ function showSignalInfo() {
   textAlign(RIGHT, BOTTOM);
   noStroke();
 
-  txt_size = 4;
-  txt_shift = 0.2;
-  signal_info_txt = signal_info_txt_1 + signal_info_txt_2 + signal_info_txt_3 + signal_info_txt_4 + signal_info_txt_5 + signal_info_txt_6;
+  txt_size = 5;
+  txt_shift = 0.25;
+  signal_info_txt = signal_info_txt_1 + signal_info_txt_2 + signal_info_txt_4 + signal_info_txt_5 + signal_info_txt_6;
 
   showText(signal_info_txt, width - width / 30, height - width / 30, txt_size, txt_shift, 0, color_a, color_b, color_c)
 
@@ -1697,37 +1693,17 @@ function showSignalInfo() {
   textAlign(CENTER, CENTER);
   noStroke();
 
-  txt_size = 6;
-  txt_shift = 0.4;
-  offset_y = 0;
-
-  // square selected
-  if (drop_zone == 1) {
-    txt = "   `                         \nsquare < portrait > landscape\n   ^                         ";
-    showText(txt, width / 2, height / 2, txt_size, txt_shift, offset_y, color_a, color_b, color_c);
-
-    // portrait selected
-  } else if (drop_zone == 2) {
-    txt = "             `                \nsquare < portrait > landscape\n             ^                ";
-    showText(txt, width / 2, height / 2, txt_size, txt_shift, offset_y, color_a, color_b, color_c);
-
-    // landscape selected
-  } else if (drop_zone == 3) {
-    txt = "                        `    \nsquare < portrait > landscape\n                        ^    ";
-    showText(txt, width / 2, height / 2, txt_size, txt_shift, offset_y, color_a, color_b, color_c);
-  }
-
   // any of the formats selected
   if (drop_zone > 0) {
-    txt_size = 12;
-    txt_shift = 0.6;
-    offset_y = -height / 5;
-    txt = "redrop img";
+    txt_size = 20;
+    txt_shift = 1;
+    offset_y = 0;
+    txt = "redrop\nimg";
     showText(txt, width / 2, height / 2, txt_size, txt_shift, offset_y, color_a, color_b, color_c);
   }
   
 }
-*/
+
 
 
 /*
@@ -1762,7 +1738,7 @@ function showSignalOnScreen() {
 }
 */
 
-/*
+
 // shows controls info as text on the canvas
 function showControlInfo() {
   let txt_size, txt_shift, controls_info_txt;
@@ -1779,15 +1755,15 @@ function showControlInfo() {
   textAlign(LEFT, BOTTOM);
   noStroke();
 
-  txt_size = 4;
-  txt_shift = 0.2;
+  txt_size = 5;
+  txt_shift = 0.25;
 
-  if (frame_counter % 20 < 13) {controls_info_txt = "CONTROLS\n<> : -+ quality\n`^ : -+ quantization\nclick : -+ square\nb : cycle border\nc : show/hide signal\nh : hide/show controls\nredrop : new image\nrefresh : fix image";}
-  else {controls_info_txt = "CONTROLS\n<> : -+ quality\n`^ : -+ quantization\nclick : -+ square\nb : cycle border\nc : show/hide signal\nh : hide/show controls\nredrop : new image\n";}
+  if (frame_counter % 20 < 13) {controls_info_txt = "CONTROLS\nLEFT/RIGHT : -+ quality\nUP/DOWN : -+ quantization\nREDROP : new image\nENTER : apply effect";}
+  else {controls_info_txt = "CONTROLS\nLEFT/RIGHT : -+ quality\nUP/DOWN : -+ quantization\nREDROP : new image\n";}
   
   showText(controls_info_txt, width / 30, height - width / 30, txt_size, txt_shift, 0, color_a, color_b, color_c)
 }
-*/
+
 
 // shows load info as text on the canvas
 function showAfterImageLoad() {
@@ -1862,7 +1838,7 @@ function gotFile(file) {
 function highlightDrop() {
 
   // if the mouse is close to the edge of the canvas, drop_zone is 0
-  if ((mouseX > width - 50) || (mouseX < 50)) { drop_zone = 0; }
+  if ((mouseX > width - 50) || (mouseX < 50) || (mouseY > height - 50) || (mouseY < 50)) { drop_zone = 0; }
   else { drop_zone = 1; } // otherwise, drop_zone is 1
 
   
@@ -2614,6 +2590,83 @@ function mouseClicked() {
 
 // called once every time a key is pressed
 function keyPressed() {
+
+
+
+  if (keyCode === LEFT_ARROW) {
+
+  // if the thumbnail was already loaded (during editing phase)
+  if (thumbnail != undefined) {
+      quality--
+      quality = clamp(quality, 1, 10);
+
+      // serializes and draws the image
+      resizeThumbnailAndSerialize(thumbnail);
+    }
+
+  } else if (keyCode === RIGHT_ARROW) {
+
+    // if the thumbnail was already loaded (during editing phase)
+    if (thumbnail != undefined) {
+      quality++
+      quality = clamp(quality, 1, 10);
+
+      // serializes and draws the image
+      resizeThumbnailAndSerialize(thumbnail);
+    }
+
+  } else if (keyCode === UP_ARROW) {
+
+    // if the thumbnail was already loaded (during editing phase)
+    if (thumbnail != undefined) {
+      quant_f++
+      quant_f = clamp(quant_f, 1, 10);
+
+      // serializes and draws the image
+      resizeThumbnailAndSerialize(thumbnail);
+    }
+
+  } else if (keyCode === DOWN_ARROW) {
+
+    // if the thumbnail was already loaded (during editing phase)
+    if (thumbnail != undefined) {
+      quant_f--
+      quant_f = clamp(quant_f, 1, 10);
+
+      // serializes and draws the image
+      resizeThumbnailAndSerialize(thumbnail);
+    }
+
+  } else if (keyCode === ENTER) {
+
+    apply_effects = !apply_effects; // toggle effects
+    effects_applied = false; // toggle back to not applied
+
+    // if the effects are to be applied (every second time ENTER is pressed)
+    if (apply_effects) {
+      output_dim = [target_dim[0] * output_scale, target_dim[1] * output_scale];
+
+      console.log("output scale -> " + output_scale.toString());
+
+      if (border_type == "none") { output_border = [0, 0]; }  // no border
+      else if (border_type == "thin") { output_border = [10 * output_scale, 10 * output_scale]; } // thin border
+      else { output_border = [20 * output_scale, 20 * output_scale]; } // thick border
+
+      resizeCanvas(output_dim[0] + output_border[0], output_dim[1] + output_border[1]);
+      select('canvas').position((windowWidth - width) / 2, (windowHeight - height) / 2); // move canvas to the middle of the browser window
+
+      // deserialize signal data into an input image - this is the starting point for all effect stacks
+      input_img = deserializeSignalToImage(signal);
+
+      // create 5 frame animation using one of the effect stacks
+      animateEffectStack(input_img, stack_data_main, stack_data_background, false);
+
+      effects_applied = true; // toggle to applied
+    }
+
+
+  }
+
 
 
   /*

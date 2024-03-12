@@ -65,6 +65,13 @@ function setup() {
   select('canvas').position((windowWidth - width) / 2, (windowHeight - height) / 2); // move canvas to the middle of the browser window
 
 
+  // sets global data for the effect stack
+  stack_data_main = setEffectData(effects_main_name);
+  stack_data_background = setEffectData(effects_background_name);
+  stack_data_background["light_threshold"] = 50; // override for effects on background
+  stack_data_background["layer_shift"] = 0; // override for effects on background
+
+  
   /*
 
   // DESERIALIZE AN INPUT IMAGE - if signal param is not empty, which means it was stored already before
@@ -156,6 +163,14 @@ function draw() {
       deserializeSignal(signal);
     }
 
+    if (!hide_info) {
+      // shows signal and control info as text on the canvas
+      showSignalInfo();
+      showControlInfo();
+    } else {
+      // no info is shown on screen
+    }
+
   }
 
 
@@ -168,6 +183,28 @@ function draw() {
     // increment the frame counter - this will make the loading text disappear
     frame_counter_after_drop++
   }
+
+
+  // SHOWING EFFECTS
+  if (effects_applied) {
+
+    if (animation_paused) {
+      // animation is paused so we will draw a fixed random frame (this is determined in keyPressed())
+      frame_to_draw = buffer_frames[random_frame_nr];
+    } else {
+      // decide which frame to draw - we will loop through all 5 frames repeatedly to imitate the gif animation
+      frame_to_draw = buffer_frames[frame_counter % nr_of_frames];
+    }
+  
+    // black background when showing the final image with effects
+    background(0, 0, 0);
+
+    // draw appropriate frame
+    copy(frame_to_draw, 0, 0, frame_to_draw.width, frame_to_draw.height, 0, 0, frame_to_draw.width, frame_to_draw.height)
+
+  }
+
+
 
 
   /*
