@@ -35,7 +35,7 @@ banner_txt += "\n     r t r d g t z r - e d i t o r |  { p r o t o c e l l : l a
 
 let input_img, gif;
 let thumbnail_scale, dropped_image, dropped_file, monomek;
-let stack_data_main, stack_data_background;
+let stack_data_main;
 let compressed_signal_size, image_compression_ratio;
 
 let thumbnail, frame_to_draw, buffer_frames, canvas, output_scale;
@@ -46,7 +46,7 @@ let frame_rate = 1000 / frame_duration; // animation frame rate
 
 let frame_counter = 0; // this will increment inside draw()
 let frame_counter_after_drop = 0; // this will increment inside draw()
-let nr_of_frames = 5; // number of frames in a gif animation
+let nr_of_frames = 1; // number of frames in a gif animation
 
 let drop_zone = 0; // 0 - outside canvas,  1 - inside canvas
 
@@ -140,8 +140,8 @@ const allel_effect_stacks_background = [
 // used only with broken tokens (when the signal is undefined) - [value, probability]
 //const allel_random_alpha_prob = [[0.0, 1], [0.01, 1], [0.1, 1], [0.25, 1]];
 
-let effects_main_name = gene_weighted_choice(allel_effect_stacks_main); // type of effects workflow to be used on the main image
-let effects_background_name = gene_weighted_choice(allel_effect_stacks_background); // type of effects workflow to be used on the background
+let effects_main_name = "mono_dith"; // type of effects workflow to be used on the main image - gene_weighted_choice(allel_effect_stacks_main);
+//let effects_background_name = gene_weighted_choice(allel_effect_stacks_background); // type of effects workflow to be used on the background
 let invert_input = false; // inverts both the input image and the effects applied to it after
 //let random_alpha_prob = gene_weighted_choice(allel_random_alpha_prob); // approx. chance that the square of pixels will be transparent (used only with broken tokens)
 

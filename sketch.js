@@ -67,9 +67,8 @@ function setup() {
 
   // sets global data for the effect stack
   stack_data_main = setEffectData(effects_main_name);
-  stack_data_background = setEffectData(effects_background_name);
-  stack_data_background["light_threshold"] = 50; // override for effects on background
-  stack_data_background["layer_shift"] = 0; // override for effects on background
+
+  
 
   
   /*
@@ -205,6 +204,9 @@ function draw() {
   }
 
 
+  // increment the frame counter - this controls the animations
+  frame_counter++
+
 
 
   /*
@@ -304,6 +306,6 @@ function draw() {
 
 
   // increment the frame counter - this controls the animations
-  frame_counter++
+  //frame_counter++
 
 }

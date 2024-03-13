@@ -47,6 +47,59 @@ function setupGif() {
 ////// EFFECT STACKS //////
 
 
+
+// sets global data for the effect stack
+function setEffectData(effects_stack_name) {
+
+  // initialize a data object which will store all the parameters
+  let data = {};
+
+  // settings taken from params are defined here
+  data["new_brightness"] = 1.0;
+  data["contrast"] = 0.50;
+  data["mask_contrast"] = clamp(data["contrast"] * 1.2, 0, 1); // 20% larger than contrast, clamped between 0 and 1
+  data["light_threshold"] = 45;
+  data["dark_threshold"] = 30;
+
+  data["contrast_delta"] = animation_params["contrast t1"]; // values from this list will be added to the contrast for each frame
+  data["brightness_delta"] = animation_params["brightness t1"]; // values from this list will be added to the brightness for each frame
+
+
+  // settings defined under effect stacks are defined here
+  switch(effects_stack_name) {
+
+    case "mono_dith":
+
+      data["nr_of_levels"] = 1;
+      data["rand_dither_key_1"] = "standard";
+      data["dither_params_1"] = dither_params_json[ data["rand_dither_key_1"] ];
+
+      data["pix_scaling"] = 2.0;
+      data["pix_scaling_dark"] = 2.0;
+      data["layer_shift"] = 4;
+      data["dark_threshold"] = 20;
+      data["invert_mask"] = false;
+
+      data["tint_palette_key_1"] = "white";
+      data["tint_palette_1"] = three_bit_palette[ data["tint_palette_key_1"] ];
+
+      data["delta_factor_1"] = 0.5; // scaling animation effects - main image
+      data["delta_factor_2"] = 50.0; // scaling animation effects - background
+      data["chosen_effect_function"] = applyMonoDithEffect;
+
+      break;
+
+    default:
+      break;
+
+  }
+
+  // return data object containing all parameters
+  return data;
+}
+
+
+/*
 // sets global data for the effect stack
 function setEffectData(effects_stack_name) {
 
@@ -377,6 +430,29 @@ function setEffectData(effects_stack_name) {
   // return data object containing all parameters
   return data;
 }
+*/
+
+
+
+// apply effect stack "mono"
+function applyMonoDithEffect(img, stack_data) {
+
+  setBrightness(img, stack_data["new_brightness"]);
+  grayscale(img, stack_data["contrast"]);
+
+  // 1. Full image
+  blendMode(BLEND); // make sure to set blendMode back to default one just in case
+  noTint();
+  img.resize(img.width / stack_data["pix_scaling"], 0);
+  makeDithered(img, stack_data["nr_of_levels"], stack_data["dither_params_1"]);
+  tint(stack_data["tint_palette_1"][0], stack_data["tint_palette_1"][1], stack_data["tint_palette_1"][2]);
+  img.resizeNN(img.width * stack_data["pix_scaling"], 0);
+  image(img, output_border[0]/2, output_border[1]/2);
+
+  blendMode(BLEND);
+  noTint();
+}
+
 
 
 // apply effect stack "mono"
@@ -696,6 +772,78 @@ function applyLoFiEffect(img, stack_data) {
 }
 
 
+
+// create 5 frame animation using one of the effect stacks
+// also triggers gif export when "g" is pressed by passing download = true
+function animateEffectStack(img, stack_data_main, download = false) {
+  // setup gif
+  if (download == true) { setupGif(); }
+
+  // inverts the colors of the input image
+  if (invert_input) {img.filter(INVERT);}
+
+  // make source image copies
+  let frames = [];
+  for (let i = 0; i < nr_of_frames; i++) {
+    let frame = img.get();
+    frames.push(frame);
+  }
+
+  let buffer_width = img.width + output_border[0];
+  let buffer_height = img.height + output_border[1];
+
+  // make graphic buffers to store canvas copies for each frame
+  buffer_frames = [];
+  for (let i = 0; i < nr_of_frames; i++) {
+    let buffer_frame = createGraphics(buffer_width, buffer_height);
+    buffer_frames.push(buffer_frame);
+  }
+
+  // save original contrast and brightness so we can restore them later
+  let original_contrast = stack_data_main["contrast"];
+  let original_new_brightness = stack_data_main["new_brightness"];
+
+  // apply effects to individual frames and add them to the gif animation
+  for (let i = 0; i < nr_of_frames; i++) {
+
+    //black background for all frames
+    background(0, 0, 0);
+
+    // create an animated background which shows through the transparent squares
+    let buffer_graphics = createGraphics(output_dim[0], output_dim[1]);
+
+    // convert p5.Graphics into p5.Image
+    let buffer_image = createImage(buffer_graphics.width, buffer_graphics.height);
+    buffer_image.copy(buffer_graphics, 0, 0, buffer_graphics.width, buffer_graphics.height, 0, 0, buffer_graphics.width, buffer_graphics.height);
+
+    // apply effect stack to canvas
+    let chosen_effect_function = stack_data_main["chosen_effect_function"];
+    chosen_effect_function(frames[i], stack_data_main);
+
+    // inverts the colors of the canvas
+    if (invert_input) {filter(INVERT);}
+
+    // add frame to gif with canvas.elt which calls underlying HTML element
+    if (download == true) { gif.addFrame(canvas.elt, { delay: frame_duration, copy: true }); }
+    // copy canvas to buffer object so it can be used later for display in draw()
+    buffer_frames[i].copy(canvas, 0, 0, buffer_width, buffer_height, 0, 0, buffer_width, buffer_height);
+
+    // change contrast and brightness slightly to get a shimmering effect during animation
+    stack_data_main["contrast"] += stack_data_main["contrast_delta"][i] * stack_data_main["delta_factor_1"];
+    stack_data_main["new_brightness"] += stack_data_main["brightness_delta"][i] * stack_data_main["delta_factor_1"];
+
+  }
+
+  // restoring values for contrast and brightness so they don't accumulate every time we save the gif animation
+  stack_data_main["contrast"] = original_contrast;
+  stack_data_main["new_brightness"] = original_new_brightness;
+
+  // render gif when done
+  if (download == true) { gif.render(); }
+}
+
+
+/*
 // create 5 frame animation using one of the effect stacks
 // also triggers gif export when "g" is pressed by passing download = true
 function animateEffectStack(img, stack_data_main, stack_data_background, download = false) {
@@ -766,7 +914,7 @@ function animateEffectStack(img, stack_data_main, stack_data_background, downloa
   // render gif when done
   if (download == true) { gif.render(); }
 }
-
+*/
 
 
 
@@ -2659,7 +2807,7 @@ function keyPressed() {
       input_img = deserializeSignalToImage(signal);
 
       // create 5 frame animation using one of the effect stacks
-      animateEffectStack(input_img, stack_data_main, stack_data_background, false);
+      animateEffectStack(input_img, stack_data_main, false);
 
       effects_applied = true; // toggle to applied
     }
