@@ -48,57 +48,6 @@ function setupGif() {
 
 
 
-// sets global data for the effect stack
-function setEffectData(effects_stack_name) {
-
-  // initialize a data object which will store all the parameters
-  let data = {};
-
-  // settings taken from params are defined here
-  data["new_brightness"] = 1.0;
-  data["contrast"] = 0.50;
-  data["mask_contrast"] = clamp(data["contrast"] * 1.2, 0, 1); // 20% larger than contrast, clamped between 0 and 1
-  data["light_threshold"] = 45;
-  data["dark_threshold"] = 30;
-
-  data["contrast_delta"] = animation_params["contrast t1"]; // values from this list will be added to the contrast for each frame
-  data["brightness_delta"] = animation_params["brightness t1"]; // values from this list will be added to the brightness for each frame
-
-
-  // settings defined under effect stacks are defined here
-  switch(effects_stack_name) {
-
-    case "mono_dith":
-
-      data["nr_of_levels"] = 1;
-      data["rand_dither_key_1"] = "standard";
-      data["dither_params_1"] = dither_params_json[ data["rand_dither_key_1"] ];
-
-      data["pix_scaling"] = 2.0;
-      data["pix_scaling_dark"] = 2.0;
-      data["layer_shift"] = 4;
-      data["dark_threshold"] = 20;
-      data["invert_mask"] = false;
-
-      data["tint_palette_key_1"] = "white";
-      data["tint_palette_1"] = three_bit_palette[ data["tint_palette_key_1"] ];
-
-      data["delta_factor_1"] = 0.5; // scaling animation effects - main image
-      data["delta_factor_2"] = 50.0; // scaling animation effects - background
-      data["chosen_effect_function"] = applyMonoDithEffect;
-
-      break;
-
-    default:
-      break;
-
-  }
-
-  // return data object containing all parameters
-  return data;
-}
-
-
 /*
 // sets global data for the effect stack
 function setEffectData(effects_stack_name) {
@@ -434,6 +383,50 @@ function setEffectData(effects_stack_name) {
 
 
 
+// sets global data for the effect stack
+function setEffectData(effects_stack_name) {
+
+  // initialize a data object which will store all the parameters
+  let data = {};
+
+  // settings taken from params are defined here
+  data["new_brightness"] = 1.0;
+  data["contrast"] = 0.50;
+  data["mask_contrast"] = clamp(data["contrast"] * 1.2, 0, 1); // 20% larger than contrast, clamped between 0 and 1
+  data["light_threshold"] = 45;
+  data["dark_threshold"] = 30;
+
+  data["contrast_delta"] = animation_params["contrast t1"]; // values from this list will be added to the contrast for each frame
+  data["brightness_delta"] = animation_params["brightness t1"]; // values from this list will be added to the brightness for each frame
+
+
+  // settings defined under effect stacks are defined here
+  switch(effects_stack_name) {
+
+    case "mono_dith":
+
+      data["nr_of_levels"] = 1;
+      data["pix_scaling"] = 1.0; // 2.0
+
+      data["dither_params_1"] = dither_params_json["right only"]; // "standard", "right only", "down only", "right down only"
+      data["tint_palette_1"] = three_bit_palette["white"];
+
+      data["delta_factor_1"] = 0.5; // scaling animation effects - main image
+      data["chosen_effect_function"] = applyMonoDithEffect;
+
+      break;
+
+    default:
+      break;
+
+  }
+
+  // return data object containing all parameters
+  return data;
+}
+
+
+
 // apply effect stack "mono"
 function applyMonoDithEffect(img, stack_data) {
 
@@ -452,6 +445,9 @@ function applyMonoDithEffect(img, stack_data) {
   blendMode(BLEND);
   noTint();
 }
+
+
+
 
 
 
@@ -1307,6 +1303,8 @@ function getNextWhiteY(img, _x, _y, whiteValue) {
 // from: https://www.youtube.com/watch?v=0L2n8Tg2FwI
 // from: https://editor.p5js.org/codingtrain/sketches/-YkMaf9Ea
 
+let travel_f = 0;
+
 // applies Floyd-Steinberg dithering with steps+1 number of levels on an image
 function makeDithered(img, steps, dither_params) {
   img.loadPixels();
@@ -1317,6 +1315,14 @@ function makeDithered(img, steps, dither_params) {
       let oldG = green(clr);
       let oldB = blue(clr);
       let oldA = alpha(clr);
+
+      if ((x == 0) || (y == 0)) {
+        oldR = (oldR + travel_f) % 256;
+        oldG = (oldG + travel_f) % 256;
+        oldB = (oldB + travel_f) % 256;
+        oldA = (oldA + travel_f) % 256;
+      }
+
       let newR = closestStep(255, steps, oldR);
       let newG = closestStep(255, steps, oldG);
       let newB = closestStep(255, steps, oldB);
@@ -2785,7 +2791,7 @@ function keyPressed() {
       resizeThumbnailAndSerialize(thumbnail);
     }
 
-  } else if (keyCode === ENTER) {
+  } else if ((keyCode === ENTER) || (keyCode === 32)) { // ENTER and SPACEBAR
 
     apply_effects = !apply_effects; // toggle effects
     effects_applied = false; // toggle back to not applied
@@ -2810,6 +2816,9 @@ function keyPressed() {
       animateEffectStack(input_img, stack_data_main, false);
 
       effects_applied = true; // toggle to applied
+
+      // increment the dither travel factor every time we press ENTER or SPACEBAR
+      travel_f = travel_f + 10;
     }
 
 
