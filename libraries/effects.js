@@ -408,7 +408,7 @@ function setEffectData(effects_stack_name) {
       data["nr_of_levels"] = 1;
       data["pix_scaling"] = 1.0; // 2.0
 
-      data["dither_params_1"] = dither_params_json["right only"]; // "standard", "right only", "down only", "right down only"
+      data["dither_params_1"] = dither_params_json["down only"]; // "standard", "right only", "down only", "right down only"
       data["tint_palette_1"] = three_bit_palette["white"];
 
       data["delta_factor_1"] = 0.5; // scaling animation effects - main image
@@ -2548,6 +2548,8 @@ function serializeSignal(thumbnail) {
 
 // crop, resize and serialize the droped image to the right proportion, then serialize signal
 function resizeThumbnailAndSerialize(thumbnail) {
+
+  /*
   // based on the image drop zone, choose the canvas format
 
   // square format
@@ -2582,25 +2584,36 @@ function resizeThumbnailAndSerialize(thumbnail) {
   target_dim = [squares_nr[0] * 8, squares_nr[1] * 8];
   w_h_ratio = (target_dim[0] + target_dim[0] * image_border[0]) / (target_dim[1] + target_dim[1] * image_border[1]);
   target_pixel_nr = target_dim[0] * target_dim[1];
+  */
 
+
+  /*
   if (windowWidth / windowHeight < w_h_ratio) {
     thumbnail_scale = windowWidth / (target_dim[0] + target_dim[0] * image_border[0]);
   } else {
     thumbnail_scale = windowHeight / (target_dim[1] + target_dim[1] * image_border[1]);
   }
+  
 
+  thumbnail_scale = canvas_height / (target_dim[1] + target_dim[1] * image_border[1]);
   canvas_dim = [target_dim[0] * thumbnail_scale, target_dim[1] * thumbnail_scale];
 
+  
   // resize canvas so it fits into the browser window
   if (windowWidth / windowHeight < w_h_ratio) {
     resizeCanvas(windowWidth, windowWidth / w_h_ratio);
   } else {
     resizeCanvas(windowHeight * w_h_ratio, windowHeight);
   }
+  */
 
+  // reset drop_zone so we can re-drop an image later
+  drop_zone = 0;
+  
   // move canvas to the middle of the browser window
   select('canvas').position((windowWidth - width) / 2, (windowHeight - height) / 2);
 
+  
   let thumbnail_ratio = target_dim[0] / target_dim[1];
 
   // cropping portrait, square and landscape formats into the right proportion
@@ -2609,6 +2622,7 @@ function resizeThumbnailAndSerialize(thumbnail) {
   } else {
     thumbnail = thumbnail.get((thumbnail.width - thumbnail.height * thumbnail_ratio) / 2, 0, thumbnail.height * thumbnail_ratio, thumbnail.height);
   }
+  
 
   // resizing uniformly to a target dimension
   thumbnail.resize(target_dim[0], 0);
@@ -2794,19 +2808,31 @@ function keyPressed() {
   } else if ((keyCode === ENTER) || (keyCode === 32)) { // ENTER and SPACEBAR
 
     apply_effects = !apply_effects; // toggle effects
-    effects_applied = false; // toggle back to not applied
+    //effects_applied = false; // toggle back to not applied
+
+    // deserialize signal data into an input image - this is the starting point for all effect stacks
+    input_img = deserializeSignalToImage(signal);
+
+    // create frames for animation using one of the effect stacks
+    animateEffectStack(input_img, stack_data_main, false);
+
+    /*
 
     // if the effects are to be applied (every second time ENTER is pressed)
     if (apply_effects) {
-      output_dim = [target_dim[0] * output_scale, target_dim[1] * output_scale];
 
-      console.log("output scale -> " + output_scale.toString());
+      //output_dim = [target_dim[0] * output_scale, target_dim[1] * output_scale];
+      //console.log("output scale -> " + output_scale.toString());
+      //if (border_type == "none") { output_border = [0, 0]; }  // no border
+      //else if (border_type == "thin") { output_border = [10 * output_scale, 10 * output_scale]; } // thin border
+      //else { output_border = [20 * output_scale, 20 * output_scale]; } // thick border
+      //resizeCanvas(output_dim[0] + output_border[0], output_dim[1] + output_border[1]);
+      
 
-      if (border_type == "none") { output_border = [0, 0]; }  // no border
-      else if (border_type == "thin") { output_border = [10 * output_scale, 10 * output_scale]; } // thin border
-      else { output_border = [20 * output_scale, 20 * output_scale]; } // thick border
+      //output_scale = 4.0; // 160 pix x 4 = 640 pix
+      //output_border = [160, 160]; // 640 pix + 160 pix = 800 pix
+      //output_dim = [target_dim[0] * output_scale, target_dim[1] * output_scale];
 
-      resizeCanvas(output_dim[0] + output_border[0], output_dim[1] + output_border[1]);
       select('canvas').position((windowWidth - width) / 2, (windowHeight - height) / 2); // move canvas to the middle of the browser window
 
       // deserialize signal data into an input image - this is the starting point for all effect stacks
@@ -2820,6 +2846,8 @@ function keyPressed() {
       // increment the dither travel factor every time we press ENTER or SPACEBAR
       travel_f = travel_f + 10;
     }
+    
+    */
 
 
   }

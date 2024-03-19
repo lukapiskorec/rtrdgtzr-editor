@@ -34,11 +34,11 @@ banner_txt += "\n     r t r d g t z r - e d i t o r |  { p r o t o c e l l : l a
 //let compressed_signal_size, image_compression_ratio;
 
 let input_img, gif;
-let thumbnail_scale, dropped_image, dropped_file, monomek;
+let dropped_image, dropped_file, monomek;
 let stack_data_main;
 let compressed_signal_size, image_compression_ratio;
 
-let thumbnail, frame_to_draw, buffer_frames, canvas, output_scale;
+let thumbnail, frame_to_draw, buffer_frames, canvas;
 
 
 let frame_duration = 100; // in mms
@@ -56,6 +56,8 @@ let offset_rgb = [-25, -25, 25]; // rgb offset applied to the droped image - jus
 let signal = ""; // initialize the signal, this is where the image data will be stored
 //let max_chars = 2000; // maximum number of characters in the compressed signal - this is separately set inside fx_params.js for the signal param
 
+let canvas_width = 800; // fixed canvas width
+let canvas_height = 800; // fixed canvas height
 let format = "square"; // get format string from params
 let border_type = "thick"; // type of border - "none", "thin", "thick"
 
@@ -84,36 +86,67 @@ let image_border = [0.15, 0.15]; // in precentage of the image dimensions
 let squares_nr = [20, 20]; // square proportion
 
 let target_dim = [squares_nr[0] * 8, squares_nr[1] * 8]; // target dimensions for the source image in pixels
-let w_h_ratio = (target_dim[0] + target_dim[0] * image_border[0]) / (target_dim[1] + target_dim[1] * image_border[1]); // image width to height ratio
+//let w_h_ratio = (target_dim[0] + target_dim[0] * image_border[0]) / (target_dim[1] + target_dim[1] * image_border[1]); // image width to height ratio
+let w_h_ratio = 1.0; // image width to height ratio
 let target_pixel_nr = target_dim[0] * target_dim[1]; // number of pixels in the image - used to calculate image compression ratio
 
-
+/*
 if (window.innerWidth / window.innerHeight < w_h_ratio) {
   thumbnail_scale = window.innerWidth / (target_dim[0] + target_dim[0] * image_border[0]); // scaling factor for the input image
 } else {
   thumbnail_scale = window.innerHeight / (target_dim[1] + target_dim[1] * image_border[1]); // scaling factor for the input image
 }
+*/
 
-
+let thumbnail_scale = canvas_height / (target_dim[1] + target_dim[1] * image_border[1]);
 let canvas_dim = [target_dim[0] * thumbnail_scale, target_dim[1] * thumbnail_scale]; // canvas dimensions are enlarged to show the input image scaled up
 //let decompressed_signal_size = squares_nr[0] * squares_nr[1] * quality;
 
-
+/*
 if (window.innerWidth / window.innerHeight < w_h_ratio) {
   output_scale = Math.floor(window.innerWidth / target_dim[0]); // scaling factor for the output image
 } else {
   output_scale = Math.floor(window.innerHeight / target_dim[1]); // scaling factor for the output image
 }
 
-
 let output_dim = [target_dim[0] * output_scale, target_dim[1] * output_scale];
 let output_border = [20 * output_scale, 20 * output_scale]; // thick border
+*/
+
+let output_scale = 4.0; // 160 pix x 4 = 640 pix
+let output_border = [160, 160]; // 640 pix + 160 pix = 800 pix
+let output_dim = [target_dim[0] * output_scale, target_dim[1] * output_scale];
+
 
 /*
 if (border_type == "none") { output_border = [0, 0]; }  // no border
 else if (border_type == "thin") { output_border = [10 * output_scale, 10 * output_scale]; } // thin border
 else { output_border = [20 * output_scale, 20 * output_scale]; } // thick border
 */
+
+
+
+
+// create parameters for all the blobs used for masking
+
+let nr_of_blobs = 3;
+let blob_data = [];
+
+let blob_temp = 0.01; // determines the speed of "waves" on the surface of the blob
+
+for (let i = 0; i < nr_of_blobs; i++) {
+  let blob = {}; // create blob object
+
+  blob.nm = gene_range(1.0, 2.5);
+  blob.zoff = gene_range(0.01, 1.00);
+
+  blob.ox = gene_range(0, canvas_width / 2);
+  blob.oy = gene_range(0, canvas_height / 2) + (canvas_height / 4);
+  blob.max = gene_range(canvas_height / 10, canvas_height / 2);
+
+  blob_data.push(blob); // add blob object to the array so we can acces the data later
+}
+
 
 
 

@@ -41,6 +41,7 @@ function preload() {
 }
 
 
+let blob_mask;
 
 
 ////// SETUP //////
@@ -53,14 +54,20 @@ function setup() {
 
   pixelDensity(1.0); // need to fix this so the gif.js exports the correct size
   frameRate(frame_rate); // frame rate for the main animation
+  angleMode(DEGREES);
 
+  /*
   // create canvas so it fits into the browser window
   if (windowWidth / windowHeight < w_h_ratio) {
     canvas = createCanvas(windowWidth, windowWidth / w_h_ratio);
   } else {
     canvas = createCanvas(windowHeight * w_h_ratio, windowHeight);
   }
+  */
 
+  // create canvas with fixed dimensions
+  canvas = createCanvas(canvas_width, canvas_height);
+  
   select('canvas').id('rtrdgtzr'); // change id of the canvas, we can access it with canvas#rtrdgtzr.p5Canvas
   select('canvas').position((windowWidth - width) / 2, (windowHeight - height) / 2); // move canvas to the middle of the browser window
 
@@ -68,7 +75,7 @@ function setup() {
   // sets global data for the effect stack
   stack_data_main = setEffectData(effects_main_name);
 
-  
+  blob_mask = createGraphics(canvas_width, canvas_height); // create an alpha mask for the blobs
 
   
   /*
@@ -123,6 +130,7 @@ function setup() {
 
   }
   */
+
 
 }
 
@@ -185,6 +193,8 @@ function draw() {
 
 
   // SHOWING EFFECTS
+
+  /*
   if (effects_applied) {
 
     if (animation_paused) {
@@ -202,6 +212,91 @@ function draw() {
     copy(frame_to_draw, 0, 0, frame_to_draw.width, frame_to_draw.height, 0, 0, frame_to_draw.width, frame_to_draw.height)
 
   }
+  */
+
+
+  // apply mono dither to the dropped image
+  if (apply_effects) {
+
+    //output_dim = [target_dim[0] * output_scale, target_dim[1] * output_scale];
+    //console.log("output scale -> " + output_scale.toString());
+    //if (border_type == "none") { output_border = [0, 0]; }  // no border
+    //else if (border_type == "thin") { output_border = [10 * output_scale, 10 * output_scale]; } // thin border
+    //else { output_border = [20 * output_scale, 20 * output_scale]; } // thick border
+    //resizeCanvas(output_dim[0] + output_border[0], output_dim[1] + output_border[1]);
+    //select('canvas').position((windowWidth - width) / 2, (windowHeight - height) / 2); // move canvas to the middle of the browser window
+
+    // deserialize signal data into an input image - this is the starting point for all effect stacks
+    //input_img = deserializeSignalToImage(signal);
+
+    // create 5 frame animation using one of the effect stacks
+    //animateEffectStack(input_img, stack_data_main, false);
+
+    //effects_applied = true; // toggle to applied
+
+    // increment the dither travel factor every time we press ENTER or SPACEBAR
+    //travel_f = travel_f + 10;
+
+
+
+
+
+
+    //frame_to_draw = buffer_frames[0];
+
+    // black background when showing the final image with effects
+    //background(0, 0, 0);
+
+    // draw appropriate frame
+    //copy(frame_to_draw, 0, 0, frame_to_draw.width, frame_to_draw.height, 0, 0, frame_to_draw.width, frame_to_draw.height)
+
+
+
+  }
+
+
+
+
+  // animated blobs
+  if (apply_effects) {
+
+    blob_mask.clear(); // clear the buffer, make all pixels transparent
+    
+    for (let i = 0; i < nr_of_blobs; i++) {
+      blob_data[i].zoff += blob_temp;
+      blob_mask.noStroke();
+      blob_mask.fill('rgba(0, 0, 0, 1)'); // sets alpha channel to full opacity
+
+      blob_mask.push();
+      blob_mask.translate(blob_data[i].ox + (canvas_width / 4), blob_data[i].oy);
+      blob_mask.noSmooth();
+      blob_mask.beginShape();
+      for (let t = 0; t < 360; t++) {
+        let xoff = map(cos(t), -1, 1, 0, blob_data[i].nm);
+        let yoff = map(sin(t), -1, 1, 0, blob_data[i].nm);
+        let r = map(noise(xoff, yoff, blob_data[i].zoff), 0, 1, 1, blob_data[i].max);
+        let x = r * cos(t);
+        let y = r * sin(t);
+        blob_mask.vertex(x, y);
+      }
+      blob_mask.endShape(CLOSE);
+      blob_mask.pop();
+    }
+
+
+
+    background(0);
+
+    let img = buffer_frames[0].get(); // copy image pixels
+    img.mask(blob_mask); // mask the image
+
+    // draw appropriate frame
+    copy(img, 0, 0, img.width, img.height, 0, 0, img.width, img.height)
+
+
+  }
+
+
 
 
   // increment the frame counter - this controls the animations
